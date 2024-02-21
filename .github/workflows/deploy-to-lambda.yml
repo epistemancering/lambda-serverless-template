@@ -31,5 +31,5 @@ jobs:  # You can have one or more jobs in a workflow
       # More than that, and you need to upload it to S3 instead. 
         run: |
           zip -r deploy.zip ./*
-          aws lambda update-function-code --function-name=functionNameHere --zip-file=fileb://deploy.zip 
+          aws lambda update-function-code --function-name=demoFunctionLive --zip-file=fileb://deploy.zip 
 # At last the AWS CLI command to Update the Zip file with existing One (With Correct Function Name)
