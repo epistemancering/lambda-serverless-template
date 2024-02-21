@@ -1,0 +1,35 @@
+name: Deploy to Lambda # Name of the Workflow (GitHub Action)
+
+on:  
+  push:   
+    branches:
+    - main   # On Push to Main, trigger the workflow jobs listed below
+
+jobs:  # You can have one or more jobs in a workflow
+  deploy_lambda:
+    runs-on: ubuntu-latest  # OS for the Action Runner (the server used to run this)
+    steps:
+      - uses: actions/checkout@v2  # --> Action to checkout the code to the Runner
+      - uses: actions/setup-node@v2 # --> Install Node on the Runner so we can install and update any npm packages used by the server
+        with:  
+          node-version: '20' #--> Specify the Version of the Node we want to install
+      - name: Configure AWS Credentials  
+        uses: aws-actions/configure-aws-credentials@v1 #--> Setup the Credential for the AWS cli
+        with:
+        # Created the Secrets Under the Repo only with These Variables
+        # I'll show where to put these in the code along.
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }} 
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2 #--> Define Region of the AWS-CLI 
+      - name: npm install
+        env:
+          CI: true
+        run: |
+          npm ci 
+      - name: deploy
+      # Push all the files to a zip, the zip file needs to be 50 MB or less for update-function-code to work.
+      # More than that, and you need to upload it to S3 instead. 
+        run: |
+          zip -r deploy.zip ./*
+          aws lambda update-function-code --function-name=functionNameHere --zip-file=fileb://deploy.zip 
+# At last the AWS CLI command to Update the Zip file with existing One (With Correct Function Name)
